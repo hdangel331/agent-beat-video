@@ -28,6 +28,14 @@ python3 scripts/setup.py
 
 make 先扫描、再生成时间线，然后创建后台任务。命令行输出 job_id，结束时输出本机成片路径。首次分析会编译部分音频函数，后续按音乐内容哈希和分析器版本复用结果。安装依赖需要网络，本地渲染可以离线运行。
 
+## 制作维尔登酒店短片
+
+[酒店任务示例](examples/hotel-task.json)导出 20 秒的 9:16 竖屏视频。片中始终显示「昆明 · 维尔登酒店」。剪其他门店或换一句文案时，修改 `caption` 即可。
+
+1. 完成上方快速开始，在 `work/demo/assets/` 下创建 `weierdeng/`。
+2. 从[酒店素材库](https://github.com/hdangel331/weierdeng-hotel-douyin-images)的「首图」「公区」和相应房型目录挑选酒店照片，放入 `weierdeng/`。该素材库另含对标酒店参考图和带文案的团购海报。为保留单一固定标题，请选干净的酒店照片。
+3. 运行虚拟环境中的 `agent-beat-video --root work/demo make examples/hotel-task.json`。示例配乐为快速开始生成的 `tide.wav`。也可把自己的音乐放入 `work/demo/music/` 并替换任务中的 `music_id`。
+
 ## 使用自己的素材
 
 1. 准备一个工作目录，例如 work/mine。在 assets/ 中放入 JPG、PNG、WebP、MP4 或 MOV；在 music/ 中放入 WAV、MP3、M4A、FLAC、AAC 或 OGG。可通过 assets/ 子目录划分素材集。

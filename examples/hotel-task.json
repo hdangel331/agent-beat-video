@@ -1,0 +1,12 @@
+{
+  "asset_pool": "weierdeng",
+  "music_id": "tide.wav",
+  "caption": "昆明 · 维尔登酒店",
+  "duration_s": 20,
+  "resolution": 1080,
+  "fps": 30,
+  "fit": "cover_crop",
+  "transition_style": "mixed",
+  "cut_density": "medium",
+  "random_seed": 71
+}
