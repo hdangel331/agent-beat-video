@@ -1,6 +1,13 @@
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+    model_validator,
+)
 
 
 class Model(BaseModel):
@@ -28,6 +35,20 @@ class Block(Model):
 Style = Literal["clean_pop", "cinematic", "kinetic"]
 
 
+Transition = Literal["cut", "fade", "wipeleft", "slideright", "circleopen"]
+
+
+def clean_caption(text):
+    if not text.strip() or any(ord(c) < 32 and c != "\n" for c in text):
+        raise ValueError("Caption must be visible plain text.")
+    return text.strip()
+
+
+Caption = Annotated[
+    str, Field(min_length=1, max_length=424), AfterValidator(clean_caption)
+]
+
+
 class Task(Model):
     asset_pool: str = "."
     music_id: str
@@ -41,7 +62,18 @@ class Task(Model):
     random_seed: int = 1
     rotation_window_days: int = Field(default=7, ge=0, le=365)
     fit: Literal["contain_blur", "cover_crop"] = "contain_blur"
-    text_style: Style = "clean_pop"
+    caption: Caption | None = Field(
+        default=None,
+        description="One stationary caption for the full video, including every transition.",
+    )
+    transition_style: Literal[
+        "mixed", "cut", "fade", "wipeleft", "slideright", "circleopen"
+    ] = "mixed"
+    text_style: Style = Field(
+        default="clean_pop",
+        deprecated=True,
+        description="Legacy field; new tasks always use a fixed caption.",
+    )
     text_blocks: list[Block] = Field(default_factory=list, max_length=8)
     manual_bpm: float | None = Field(default=None, ge=35, le=240)
     theme: str = ""
@@ -50,6 +82,12 @@ class Task(Model):
     language: str = "zh-CN"
     forbidden_terms: list[str] = Field(default_factory=list)
 
+    @model_validator(mode="after")
+    def one_caption_input(self):
+        if self.caption is not None and self.text_blocks:
+            raise ValueError("Supply either caption or legacy text_blocks.")
+        return self
+
 
 class Shot(Model):
     asset_id: str = Field(pattern=r"^[a-f0-9]{64}$")
@@ -57,7 +95,8 @@ class Shot(Model):
     duration_frames: int = Field(gt=0)
     source_in_frames: int = Field(ge=0)
     motion: Literal["in", "out"] = "in"
-    transition: Literal["cut"] = "cut"
+    transition: Transition = "cut"
+    transition_frames: int = Field(default=0, ge=0, le=60)
 
 
 class TextEvent(Block):
@@ -79,7 +118,7 @@ class CutPoint(Model):
 
 
 class Plan(Model):
-    schema_version: Literal["1.0"] = "1.0"
+    schema_version: Literal["1.0", "1.1"] = "1.0"
     seed: int
     fps: Literal[24, 25, 30, 60]
     total_frames: int = Field(ge=240, le=3600)
@@ -87,6 +126,7 @@ class Plan(Model):
     fit: Literal["contain_blur", "cover_crop"]
     music: Music
     shots: list[Shot] = Field(min_length=1, max_length=150)
+    caption: Caption | None = None
     text_events: list[TextEvent] = Field(max_length=8)
     cut_points: list[CutPoint]
     history_snapshot: dict[str, int]

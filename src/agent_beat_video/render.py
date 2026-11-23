@@ -6,9 +6,10 @@ from tempfile import TemporaryDirectory
 
 import numpy as np
 
+from .caption_quality import measure_caption
 from .music import analyze
 from .store import digest, media_input, probe, run, write_json
-from .typography import subtitles
+from .typography import fixed_caption, subtitles
 
 
 def verify_plan(store, plan):
@@ -19,6 +20,14 @@ def verify_plan(store, plan):
     for shot in plan.shots:
         if shot.start_frame != offset:
             raise ValueError("Shots must be contiguous from frame zero")
+        if shot.transition == "cut" and shot.transition_frames != 0:
+            raise ValueError("A hard cut must have zero transition frames")
+        if shot.transition != "cut" and (
+            not offset or not 2 <= shot.transition_frames < shot.duration_frames
+        ):
+            raise ValueError(
+                "A transition needs a preceding shot and must fit the incoming shot"
+            )
         offset += shot.duration_frames
         if shot.asset_id not in sources:
             sources[shot.asset_id] = store.resolve(shot.asset_id, "video")
@@ -33,6 +42,8 @@ def verify_plan(store, plan):
             raise ValueError("Shot exceeds source duration")
     if offset != plan.total_frames:
         raise ValueError("Shots do not cover the target frame count")
+    if plan.text_events and (plan.caption is not None or plan.schema_version == "1.1"):
+        raise ValueError("A fixed-caption plan supports one full-length caption.")
     for e in plan.text_events:
         if e.start_frame + e.duration_frames > offset:
             raise ValueError("Text exceeds timeline")
@@ -42,7 +53,7 @@ def verify_plan(store, plan):
     return sources, music
 
 
-def shot_filter(plan, shot, still):
+def shot_filter(plan, shot, still, tail_frames=0):
     w, h = plan.resolution, plan.resolution * 16 // 9
     cover = f"scale={w}:{h}:force_original_aspect_ratio=increase:force_divisible_by=2,crop={w}:{h}"
     if plan.fit == "contain_blur":
@@ -54,11 +65,91 @@ def shot_filter(plan, shot, still):
         fit = cover
     if still:
         delta = f"0.065*on/{max(1, shot.duration_frames - 1)}"
-        zoom = "1+" + delta if shot.motion == "in" else "1.065-" + delta
-        fit += f",scale={w * 2}:-2,zoompan=z='{zoom}':x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2':d={shot.duration_frames}:s={w}x{h}:fps={plan.fps}"
+        zoom = "1+" + delta if shot.motion == "in" else "max(1,1.065-" + delta + ")"
+        fit += f",scale={w * 2}:-2,zoompan=z='{zoom}':x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2':d={shot.duration_frames + tail_frames}:s={w}x{h}:fps={plan.fps}"
     else:
-        fit += f",fps={plan.fps},tpad=stop_mode=clone:stop_duration={2 / plan.fps:.8f}"
-    return fit + ",setsar=1,format=yuv420p"
+        fit += f",fps={plan.fps},tpad=stop_mode=clone:stop_duration={(2 + tail_frames) / plan.fps:.8f}"
+    return (
+        fit
+        + ",scale=iw:ih:out_range=tv:out_color_matrix=bt709,format=yuv420p,setsar=1,setparams=range=limited:color_primaries=bt709:color_trc=bt709:colorspace=bt709"
+    )
+
+
+def encode_shot(ff, plan, index, source, info):
+    shot = plan.shots[index]
+    following = plan.shots[index + 1] if index + 1 < len(plan.shots) else None
+    # One extra frame supplies xfade's endpoint. Handles come from the continuing source.
+    tail = (
+        following.transition_frames + 1
+        if following and following.transition_frames
+        else 0
+    )
+    still = info["kind"] == "image"
+    seek = [] if still else ["-ss", f"{shot.source_in_frames / plan.fps:.9f}"]
+    inputs = [*seek, *media_input(source), "-i", str(source)]
+    graph = [
+        "[0:v:0]"
+        + shot_filter(plan, shot, still, tail)
+        + ",settb=1/"
+        + str(plan.fps)
+        + ",setpts=N[image]"
+    ]
+    if tail:
+        graph += [
+            "[image]split[body][extra]",
+            f"[extra]trim=start_frame={shot.duration_frames}:end_frame={shot.duration_frames + tail},setpts=N[handle]",
+        ]
+        body = "body"
+    else:
+        body = "image"
+    graph.append(
+        f"[{body}]trim=end_frame={shot.duration_frames},setpts=N,fps={plan.fps}[trimmed]"
+    )
+    output = "trimmed"
+    if shot.transition_frames:
+        inputs += ["-i", f"handle{index - 1:03}.mp4"]
+        graph += [
+            f"[1:v:0]settb=1/{plan.fps},setpts=N,fps={plan.fps}[outgoing]",
+            f"[outgoing][trimmed]xfade=transition={shot.transition}:duration={shot.transition_frames / plan.fps:.9f}:offset=0,format=yuv420p[blended]",
+        ]
+        output = "blended"
+
+    def stream(label, frames, name):
+        return [
+            "-map",
+            f"[{label}]",
+            "-an",
+            "-frames:v",
+            str(frames),
+            "-c:v",
+            "libx264",
+            "-pix_fmt",
+            "yuv420p",
+            "-color_range",
+            "tv",
+            "-colorspace",
+            "bt709",
+            "-color_primaries",
+            "bt709",
+            "-color_trc",
+            "bt709",
+            "-threads",
+            "3",
+            "-preset",
+            "veryfast",
+            "-crf",
+            "17",
+            "-video_track_timescale",
+            str(plan.fps * 1000),
+            name,
+        ]
+
+    name = f"shot{index:03}.mp4"
+    outputs = stream(output, shot.duration_frames, name)
+    if tail:
+        outputs += stream("handle", tail, f"handle{index:03}.mp4")
+    ff([*inputs, "-filter_complex", ";".join(graph), *outputs])
+    return name
 
 
 def inspect_video(path, plan, analysis):
@@ -178,7 +269,10 @@ def render(store, plan, folder, progress):
         (folder / "render.log").open("w", encoding="utf-8") as log,
     ):
         tmp = Path(tmp)
-        layout = subtitles(plan, tmp) if plan.text_events else []
+        caption = fixed_caption(plan, tmp) if plan.caption else None
+        layout = (
+            [caption] if caption else subtitles(plan, tmp) if plan.text_events else []
+        )
 
         def ff(args):
             result = subprocess.run(
@@ -209,33 +303,7 @@ def render(store, plan, folder, progress):
         for i, s in enumerate(plan.shots):
             progress("shots", 5 + int(65 * i / len(plan.shots)))
             path, info = sources[s.asset_id]
-            still = info["kind"] == "image"
-            seek = [] if still else ["-ss", f"{s.source_in_frames / plan.fps:.9f}"]
-            name = f"shot{i:03d}.mp4"
-            ff(
-                [
-                    *seek,
-                    *media_input(path),
-                    "-i",
-                    str(path),
-                    "-an",
-                    "-vf",
-                    shot_filter(plan, s, still),
-                    "-frames:v",
-                    str(s.duration_frames),
-                    "-c:v",
-                    "libx264",
-                    "-threads",
-                    "3",
-                    "-preset",
-                    "veryfast",
-                    "-crf",
-                    "17",
-                    "-video_track_timescale",
-                    str(plan.fps * 1000),
-                    name,
-                ]
-            )
+            name = encode_shot(ff, plan, i, path, info)
             frames = int(probe(tmp / name)["streams"][0]["nb_frames"])
             if frames != s.duration_frames:
                 raise ValueError(
@@ -245,19 +313,28 @@ def render(store, plan, folder, progress):
         progress("mux", 74)
         (tmp / "clips.txt").write_text("\n".join(files) + "\n", encoding="ascii")
         seconds = plan.total_frames / plan.fps
-        video = (
-            [
-                "-vf",
-                "ass=captions.ass:fontsdir=fonts",
-                "-c:v",
-                "libx264",
-                "-threads",
-                "4",
-                "-preset",
-                "veryfast",
-                "-crf",
-                "19",
+        overlay_input = []
+        if caption:
+            overlay_input = [
+                "-loop",
+                "1",
+                "-framerate",
+                str(plan.fps),
+                "-i",
+                "caption.png",
             ]
+            video = [
+                "-filter_complex",
+                f"[0:v:0][2:v:0]overlay=x={caption['x']}:y={caption['y']}:shortest=1:format=yuv420[out]",
+                "-map",
+                "[out]",
+            ]
+        elif layout:
+            video = ["-map", "0:v:0", "-vf", "ass=captions.ass:fontsdir=fonts"]
+        else:
+            video = ["-map", "0:v:0"]
+        video += (
+            ["-c:v", "libx264", "-threads", "4", "-preset", "veryfast", "-crf", "19"]
             if layout
             else ["-c:v", "copy"]
         )
@@ -265,6 +342,8 @@ def render(store, plan, folder, progress):
             [
                 "-f",
                 "concat",
+                "-reinit_filter",
+                "0",
                 "-safe",
                 "1",
                 "-i",
@@ -274,11 +353,10 @@ def render(store, plan, folder, progress):
                 *media_input(music),
                 "-i",
                 str(music),
-                "-map",
-                "0:v:0",
+                *overlay_input,
+                *video,
                 "-map",
                 "1:a:0",
-                *video,
                 "-af",
                 f"aresample=48000,afade=t=in:d=0.04,afade=t=out:st={seconds - 0.28:.9f}:d=0.28",
                 "-c:a",
@@ -295,6 +373,13 @@ def render(store, plan, folder, progress):
         progress("quality", 90)
         qa = inspect_video(tmp / "video.mp4", plan, analysis)
         qa["text_layout"] = layout
+        if caption:
+            qa["fixed_caption_check"] = measure_caption(
+                tmp / "video.mp4", tmp / "caption.png", caption
+            )
+            if not qa["fixed_caption_check"]["passed"]:
+                qa["errors"].append("fixed_caption_visibility")
+                qa["passed"] = False
         write_json(folder / "qa.json", qa)
         if not qa["passed"]:
             raise ValueError("Quality checks failed: " + ", ".join(qa["errors"]))
@@ -303,7 +388,7 @@ def render(store, plan, folder, progress):
         write_json(
             folder / "manifest.json",
             dict(
-                schema_version="1.0",
+                schema_version=plan.schema_version,
                 video="video.mp4",
                 sha256=checksum,
                 plan="plan.json",

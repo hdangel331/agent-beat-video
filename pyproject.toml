@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agent-beat-video"
-version = "0.1.0"
+version = "0.2.0"
 description = "Frame-accurate local music video editor with a CLI and MCP stdio tools"
 requires-python = ">=3.11"
 dependencies = ["librosa==0.11.0", "numpy>=1.26,<3", "Pillow>=10,<14", "pydantic>=2.8,<3", "fonttools>=4.50,<5", "filelock>=3.13,<4"]
@@ -17,3 +17,6 @@ agent-beat-video = "agent_beat_video.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+agent_beat_video = ["fonts/*.otf", "fonts/*.txt"]

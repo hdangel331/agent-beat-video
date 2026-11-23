@@ -6,23 +6,6 @@
   "cut_density": "medium",
   "variation_strength": 0.65,
   "fit": "cover_crop",
-  "text_style": "cinematic",
-  "text_blocks": [
-    {
-      "text": "山海有时",
-      "role": "title"
-    },
-    {
-      "text": "等一阵风，越过山脊",
-      "role": "middle"
-    },
-    {
-      "text": "循着潮声，走向海边",
-      "role": "middle"
-    },
-    {
-      "text": "把今天留在这里",
-      "role": "ending"
-    }
-  ]
+  "transition_style": "mixed",
+  "caption": "山海有时"
 }

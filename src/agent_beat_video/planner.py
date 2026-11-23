@@ -100,12 +100,10 @@ def build(store, task: Task, snapshot=None):
     assets = store.pool(task.asset_pool)
     if not assets:
         raise ValueError("No indexed assets. Scan the asset pool first.")
-    if any(
-        term in block.text
-        for term in task.forbidden_terms
-        if term
-        for block in task.text_blocks
-    ):
+    caption = (
+        task.caption or "\n".join(block.text for block in task.text_blocks) or None
+    )
+    if caption and any(term in caption for term in task.forbidden_terms if term):
         raise ValueError("Text contains a forbidden term")
     a = analyze(store, task.music_id)
     fps = task.fps
@@ -189,19 +187,30 @@ def build(store, task: Task, snapshot=None):
                 motion=motion,
             )
         )
-    events = []
-    for i, block in enumerate(task.text_blocks):
-        start = round(i * total / len(task.text_blocks))
-        span = round((i + 1) * total / len(task.text_blocks)) - start
-        events.append(
-            dict(
-                **block.model_dump(),
-                start_frame=start,
-                duration_frames=max(1, span - min(fps // 4, span // 8)),
-                template=task.text_style,
-            )
-        )
+    # Independent RNG keeps the same imagery and beats when only the transition preset changes.
+    effects_rng = random.Random(f"transitions:{task.random_seed}")
+    bag = []
+    for shot in shots[1:]:
+        style = task.transition_style
+        if style == "mixed":
+            if not bag:
+                bag = [
+                    "cut",
+                    "cut",
+                    "cut",
+                    "fade",
+                    "wipeleft",
+                    "slideright",
+                    "circleopen",
+                ]
+                effects_rng.shuffle(bag)
+            style = bag.pop()
+        frames = min(round(0.32 * fps), shot["duration_frames"] // 2)
+        if style != "cut" and frames >= 2:
+            shot.update(transition=style, transition_frames=frames)
     plan = Plan(
+        schema_version="1.1",
+        caption=caption,
         seed=task.random_seed,
         fps=fps,
         total_frames=total,
@@ -209,7 +218,7 @@ def build(store, task: Task, snapshot=None):
         fit=task.fit,
         music=dict(asset_id=a["asset_id"], offset_frames=offset),
         shots=shots,
-        text_events=events,
+        text_events=[],
         cut_points=points,
         history_snapshot=hist,
         warnings=list(dict.fromkeys(warnings)),

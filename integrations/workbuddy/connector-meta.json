@@ -7,7 +7,7 @@
   "description_en": "Create local beat-synchronized videos from your media and Chinese copy.",
   "source": "agent-beat-video",
   "type": "mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "examples_zh": [
     "扫描已授权的素材文件夹，分析 tide.wav 的节拍。",
     "规划一条 20 秒的竖屏短片，渲染后给我 MP4 路径和质量报告。"

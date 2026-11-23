@@ -1,30 +1,98 @@
-import os
+import hashlib
+import math
 import shutil
-import subprocess
+from functools import lru_cache
 from pathlib import Path
 
 from fontTools.ttLib import TTFont
-from PIL import ImageFont
+from PIL import Image, ImageDraw, ImageFont
+
+FONT_PATH = Path(__file__).with_name("fonts") / "NotoSansSC-Regular.otf"
+FONT_SHA256 = "faa6c9df652116dde789d351359f3d7e5d2285a2b2a1f04a2d7244df706d5ea9"
 
 
-def font_for(template):
-    path = os.getenv("ABV_FONT")
-    preferred = "Noto Serif CJK SC" if template == "cinematic" else "Noto Sans CJK SC"
-    index = 0
-    if not path and shutil.which("fc-match"):
-        match = subprocess.check_output(
-            ["fc-match", "-f", "%{file}\n%{index}", preferred], text=True
-        ).splitlines()
-        path, index = match[0], int(match[1] or 0)
-    if not path and os.name == "nt":
-        path = str(Path(os.environ.get("WINDIR", r"C:\Windows")) / "Fonts" / "msyh.ttc")
-    if not path or not Path(path).is_file():
-        raise ValueError("Set ABV_FONT to a licensed Chinese .ttf/.otf/.ttc font.")
-    face = TTFont(path, fontNumber=index, lazy=True)
-    name = face["name"].getDebugName(16) or face["name"].getDebugName(1)
-    cmap = set(face.getBestCmap())
-    face.close()
-    return path, index, name, cmap
+@lru_cache(maxsize=1)
+def font_for():
+    if (
+        not FONT_PATH.is_file()
+        or hashlib.sha256(FONT_PATH.read_bytes()).hexdigest() != FONT_SHA256
+    ):
+        raise ValueError(
+            "Bundled OFL typeface missing or changed. Reinstall AgentBeatVideo."
+        )
+    with TTFont(FONT_PATH, lazy=True) as face:
+        family = face["name"].getDebugName(1)
+        cmap = frozenset(face.getBestCmap())
+    return str(FONT_PATH), 0, family, cmap
+
+
+def check_glyphs(text, cmap):
+    missing = list(
+        dict.fromkeys(c for c in text if not c.isspace() and ord(c) not in cmap)
+    )
+    if missing:
+        raise ValueError("Noto Sans SC lacks these glyphs: " + "".join(missing))
+
+
+def fixed_caption(plan, folder):
+    path, _, family, cmap = font_for()
+    check_glyphs(plan.caption, cmap)
+    w, h = plan.resolution, plan.resolution * 16 // 9
+    max_width = round(0.83 * w)
+    # Fit actual ink bounds, including the outline, before drawing the one reusable layer.
+    for size in range(round(w * 0.076), max(12, round(w * 0.025)) - 1, -2):
+        font = ImageFont.truetype(path, size)
+        stroke = max(2, round(size * 0.045))
+        lines = []
+        for paragraph in plan.caption.splitlines():
+            lines.extend(wrap(paragraph, font, max_width - 2 * stroke) or [""])
+        text = "\n".join(lines)
+        spacing = round(size * 0.34)
+        draw = ImageDraw.Draw(Image.new("L", (1, 1)))
+        left, top, right, bottom = draw.multiline_textbbox(
+            (0, 0),
+            text,
+            font=font,
+            spacing=spacing,
+            align="center",
+            stroke_width=stroke,
+        )
+        ink_w, ink_h = math.ceil(right - left), math.ceil(bottom - top)
+        if ink_w <= max_width and ink_h <= h * 0.38:
+            break
+    else:
+        raise ValueError("Caption does not fit the safe area.")
+    pad = stroke + 2
+    tile = Image.new("RGBA", (ink_w + 2 * pad, ink_h + 2 * pad))
+    ImageDraw.Draw(tile).multiline_text(
+        (pad - left, pad - top),
+        text,
+        font=font,
+        spacing=spacing,
+        align="center",
+        fill=(255, 251, 243, 255),
+        stroke_width=stroke,
+        stroke_fill=(27, 35, 39, 255),
+    )
+    # YUV 4:2:0 overlay coordinates are rounded down to even pixels by FFmpeg.
+    x = ((w - tile.width) // 2) & ~1
+    y = (round(0.74 * h) - tile.height // 2) & ~1
+    tile.save(folder / "caption.png")
+    return dict(
+        text=plan.caption,
+        font=family,
+        font_version="2.004",
+        font_license="OFL-1.1",
+        font_sha256=FONT_SHA256,
+        start_frame=0,
+        duration_frames=plan.total_frames,
+        lines=len(lines),
+        x=x,
+        y=y,
+        safe_box=[x, y, x + tile.width, y + tile.height],
+        font_size=size,
+        glyphs_present=True,
+    )
 
 
 def timestamp(frames, fps):
@@ -62,12 +130,8 @@ Format: Name,Fontname,Fontsize,PrimaryColour,SecondaryColour,OutlineColour,BackC
     events = []
     checked = []
     for i, event in enumerate(plan.text_events):
-        path, index, family, cmap = font_for(event.template)
-        missing = [c for c in event.text if not c.isspace() and ord(c) not in cmap]
-        if missing:
-            raise ValueError(
-                "Font lacks required glyphs: " + "".join(dict.fromkeys(missing))
-            )
+        path, index, family, cmap = font_for()
+        check_glyphs(event.text, cmap)
         target = fontdir / Path(path).name
         if not target.exists():
             shutil.copyfile(path, target)

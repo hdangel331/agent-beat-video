@@ -52,6 +52,8 @@ def serve(store):
                 plan_id=key,
                 cut_points=[p.model_dump() for p in plan.cut_points],
                 shot_count=len(plan.shots),
+                caption=plan.caption,
+                transitions=[shot.transition for shot in plan.shots[1:]],
                 warnings=plan.warnings,
             )
 

@@ -26,7 +26,7 @@ async def smoke(root):
         duration_s=10,
         resolution=720,
         fit="contain_blur",
-        text_style="kinetic",
+        transition_style="mixed",
         random_seed=72,
     )
     async with (
