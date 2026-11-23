@@ -1,0 +1,196 @@
+{
+  "schema_version": "1.0",
+  "seed": 71,
+  "fps": 30,
+  "total_frames": 600,
+  "resolution": 1080,
+  "fit": "cover_crop",
+  "music": {
+    "asset_id": "05fdcba3facc15d15a14b720078b0395929830b3111e912e888dd265a9b429df",
+    "offset_frames": 0
+  },
+  "shots": [
+    {
+      "asset_id": "f3652fefdb3d04e72fdd9d311759b32b2705d9f141bef877e3808ed82e012da3",
+      "start_frame": 0,
+      "duration_frames": 60,
+      "source_in_frames": 97,
+      "motion": "out",
+      "transition": "cut"
+    },
+    {
+      "asset_id": "48b1c7900013e1124407da6d556d67811adf608fe9898d1bbf1f0d9105fa813f",
+      "start_frame": 60,
+      "duration_frames": 30,
+      "source_in_frames": 0,
+      "motion": "in",
+      "transition": "cut"
+    },
+    {
+      "asset_id": "0e5e1741e8ea9390ff368658fccfabc42c25211dadabc78e1c35e542ad4aa0b4",
+      "start_frame": 90,
+      "duration_frames": 30,
+      "source_in_frames": 99,
+      "motion": "in",
+      "transition": "cut"
+    },
+    {
+      "asset_id": "c0d8e5df97987a1222de3881ff62e5fa3da2a705b93a1c2de20485900e068e77",
+      "start_frame": 120,
+      "duration_frames": 60,
+      "source_in_frames": 0,
+      "motion": "in",
+      "transition": "cut"
+    },
+    {
+      "asset_id": "fd85e78c5899f1d1134a1033c490bd03dd7b950162a9bbd331a502188a1d9922",
+      "start_frame": 180,
+      "duration_frames": 60,
+      "source_in_frames": 0,
+      "motion": "out",
+      "transition": "cut"
+    },
+    {
+      "asset_id": "dce9df1f4b4cc91f114805fc314729e627306f40536161540468f7d88a00fdbd",
+      "start_frame": 240,
+      "duration_frames": 120,
+      "source_in_frames": 0,
+      "motion": "out",
+      "transition": "cut"
+    },
+    {
+      "asset_id": "8d5ab189ec9d851737c32ebd3344acf97bd4b8dbf6b1677ffd48fa6ccabe52c7",
+      "start_frame": 360,
+      "duration_frames": 120,
+      "source_in_frames": 58,
+      "motion": "in",
+      "transition": "cut"
+    },
+    {
+      "asset_id": "bed1e8bce602c9da920341617ebefb92ffc2e6832c45d1184bcc480ca9fe0f45",
+      "start_frame": 480,
+      "duration_frames": 30,
+      "source_in_frames": 0,
+      "motion": "in",
+      "transition": "cut"
+    },
+    {
+      "asset_id": "bb1e34f0a07f0659d9df97c663c7d8fead2d075861e1d523950359ac419d58dd",
+      "start_frame": 510,
+      "duration_frames": 30,
+      "source_in_frames": 0,
+      "motion": "in",
+      "transition": "cut"
+    },
+    {
+      "asset_id": "6b3e0a617e5cde7251085f0069c56773563fb750b9ab8648511d6ed92e586eb6",
+      "start_frame": 540,
+      "duration_frames": 30,
+      "source_in_frames": 0,
+      "motion": "out",
+      "transition": "cut"
+    },
+    {
+      "asset_id": "82894f8559f9f40ccb586bd888bb1ee4deacbcadb8321d8c0d1018b7027be579",
+      "start_frame": 570,
+      "duration_frames": 30,
+      "source_in_frames": 0,
+      "motion": "in",
+      "transition": "cut"
+    }
+  ],
+  "text_events": [
+    {
+      "text": "山海有时",
+      "role": "title",
+      "start_frame": 0,
+      "duration_frames": 143,
+      "template": "cinematic"
+    },
+    {
+      "text": "等一阵风，越过山脊",
+      "role": "middle",
+      "start_frame": 150,
+      "duration_frames": 143,
+      "template": "cinematic"
+    },
+    {
+      "text": "循着潮声，走向海边",
+      "role": "middle",
+      "start_frame": 300,
+      "duration_frames": 143,
+      "template": "cinematic"
+    },
+    {
+      "text": "把今天留在这里",
+      "role": "ending",
+      "start_frame": 450,
+      "duration_frames": 143,
+      "template": "cinematic"
+    }
+  ],
+  "cut_points": [
+    {
+      "frame": 60,
+      "kind": "detected",
+      "candidate_s": 2.00544,
+      "error_frames": 0.1632
+    },
+    {
+      "frame": 90,
+      "kind": "detected",
+      "candidate_s": 3.00317,
+      "error_frames": 0.0951
+    },
+    {
+      "frame": 120,
+      "kind": "detected",
+      "candidate_s": 4.01088,
+      "error_frames": 0.3264
+    },
+    {
+      "frame": 180,
+      "kind": "detected",
+      "candidate_s": 6.00635,
+      "error_frames": 0.1905
+    },
+    {
+      "frame": 240,
+      "kind": "detected",
+      "candidate_s": 8.01179,
+      "error_frames": 0.3537
+    },
+    {
+      "frame": 360,
+      "kind": "detected",
+      "candidate_s": 12.0127,
+      "error_frames": 0.381
+    },
+    {
+      "frame": 480,
+      "kind": "detected",
+      "candidate_s": 16.00363,
+      "error_frames": 0.1089
+    },
+    {
+      "frame": 510,
+      "kind": "detected",
+      "candidate_s": 17.01134,
+      "error_frames": 0.3402
+    },
+    {
+      "frame": 540,
+      "kind": "detected",
+      "candidate_s": 18.00907,
+      "error_frames": 0.2721
+    },
+    {
+      "frame": 570,
+      "kind": "detected",
+      "candidate_s": 19.0068,
+      "error_frames": 0.204
+    }
+  ],
+  "history_snapshot": {},
+  "warnings": []
+}

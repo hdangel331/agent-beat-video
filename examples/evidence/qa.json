@@ -1,0 +1,68 @@
+{
+  "passed": true,
+  "errors": [],
+  "warnings": [],
+  "frames": 600,
+  "width": 1080,
+  "height": 1920,
+  "fps": "30/1",
+  "video_codec": "h264",
+  "audio_codec": "aac",
+  "duration_s": 20.0,
+  "audio_duration_s": 20.0,
+  "audio_peak": 0.84623,
+  "black_frames": [],
+  "longest_nearly_static_frames": 1,
+  "detected_cut_count": 10,
+  "beat_sync_fraction_within_one_frame": 1.0,
+  "text_layout": [
+    {
+      "text": "山海有时",
+      "font": "Noto Serif CJK SC",
+      "glyphs_present": true,
+      "lines": 1,
+      "safe_box": [
+        92,
+        1363,
+        988,
+        1526
+      ]
+    },
+    {
+      "text": "等一阵风，越过山脊",
+      "font": "Noto Serif CJK SC",
+      "glyphs_present": true,
+      "lines": 1,
+      "safe_box": [
+        92,
+        1421,
+        988,
+        1524
+      ]
+    },
+    {
+      "text": "循着潮声，走向海边",
+      "font": "Noto Serif CJK SC",
+      "glyphs_present": true,
+      "lines": 1,
+      "safe_box": [
+        92,
+        1421,
+        988,
+        1524
+      ]
+    },
+    {
+      "text": "把今天留在这里",
+      "font": "Noto Serif CJK SC",
+      "glyphs_present": true,
+      "lines": 1,
+      "safe_box": [
+        92,
+        1421,
+        988,
+        1524
+      ]
+    }
+  ]
+}

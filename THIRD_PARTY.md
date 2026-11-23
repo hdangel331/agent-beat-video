@@ -7,7 +7,7 @@
 | Pillow | [MIT-CMU / HPND](https://pillow.readthedocs.io/en/stable/about.html#license) | 生成样本及字体度量 |
 | FontTools | [MIT](https://github.com/fonttools/fonttools/blob/main/LICENSE) | 校验字体字形，读取字体族 |
 | Pydantic | [MIT](https://github.com/pydantic/pydantic/blob/main/LICENSE) | 任务参数和时间线校验 |
-| filelock | [Unlicense](https://github.com/tox-dev/filelock/blob/main/LICENSE) | 作业互斥 |
+| filelock | [MIT](https://github.com/tox-dev/filelock/blob/main/LICENSE) | 作业互斥 |
 | MCP Python SDK 1.29.0 | [MIT](https://github.com/modelcontextprotocol/python-sdk/blob/main/LICENSE) | 可选 stdio 服务和验收客户端 |
 | FFmpeg / ffprobe | [上游许可说明](https://ffmpeg.org/legal.html) | 调用本机二进制，启用 libx264、libass 的构建。分发编译产物前须审查对应构建选项。 |
 | Noto Sans CJK SC | [SIL OFL](https://github.com/notofonts/noto-cjk/blob/main/Sans/LICENSE) | 样片使用本机字体，没有随项目打包。 |

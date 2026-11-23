@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "video": "video.mp4",
+  "sha256": "c8c27c81acfebf0f1b117c88b89e099936e4c584490662005c012dc1fcda104a",
+  "plan": "plan.json",
+  "analysis": "analysis.json",
+  "qa": "qa.json",
+  "seed": 71,
+  "shots": 11,
+  "renderer": "ffmpeg",
+  "assets": [
+    "0e5e1741e8ea9390ff368658fccfabc42c25211dadabc78e1c35e542ad4aa0b4",
+    "48b1c7900013e1124407da6d556d67811adf608fe9898d1bbf1f0d9105fa813f",
+    "6b3e0a617e5cde7251085f0069c56773563fb750b9ab8648511d6ed92e586eb6",
+    "82894f8559f9f40ccb586bd888bb1ee4deacbcadb8321d8c0d1018b7027be579",
+    "8d5ab189ec9d851737c32ebd3344acf97bd4b8dbf6b1677ffd48fa6ccabe52c7",
+    "bb1e34f0a07f0659d9df97c663c7d8fead2d075861e1d523950359ac419d58dd",
+    "bed1e8bce602c9da920341617ebefb92ffc2e6832c45d1184bcc480ca9fe0f45",
+    "c0d8e5df97987a1222de3881ff62e5fa3da2a705b93a1c2de20485900e068e77",
+    "dce9df1f4b4cc91f114805fc314729e627306f40536161540468f7d88a00fdbd",
+    "f3652fefdb3d04e72fdd9d311759b32b2705d9f141bef877e3808ed82e012da3",
+    "fd85e78c5899f1d1134a1033c490bd03dd7b950162a9bbd331a502188a1d9922"
+  ]
+}
