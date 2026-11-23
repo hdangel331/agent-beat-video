@@ -1,0 +1,19 @@
+{
+  "name": "AgentBeatVideo",
+  "name_zh": "音乐卡点剪辑",
+  "name_en": "AgentBeatVideo",
+  "description": "Create local beat-synchronized music videos with Chinese titles.",
+  "description_zh": "将授权目录内的图片、视频、音乐和中文文案剪辑为竖屏卡点短片。",
+  "description_en": "Create local beat-synchronized videos from your media and Chinese copy.",
+  "source": "agent-beat-video",
+  "type": "mcp",
+  "version": "0.1.0",
+  "examples_zh": [
+    "扫描已授权的素材文件夹，分析 tide.wav 的节拍。",
+    "规划一条 20 秒的竖屏短片，渲染后给我 MP4 路径和质量报告。"
+  ],
+  "examples_en": [
+    "Scan my authorized media folder and analyze tide.wav.",
+    "Render a 20-second vertical film and return the quality report."
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "beatvideo": {
+      "type": "local",
+      "command": [
+        "C:\\AgentBeatVideo\\.venv\\Scripts\\python.exe",
+        "-m",
+        "agent_beat_video.cli",
+        "--root",
+        "C:\\AgentBeatVideo\\work\\demo",
+        "mcp"
+      ],
+      "enabled": true,
+      "timeout": 120000
+    }
+  }
+}

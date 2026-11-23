@@ -1,0 +1,96 @@
+{
+  "client": "official MCP Python SDK / stdio",
+  "tools": [
+    "analyze_music",
+    "cancel_job",
+    "create_video",
+    "get_job_status",
+    "get_video_result",
+    "list_assets",
+    "preview_edit_plan",
+    "retry_job",
+    "scan_assets"
+  ],
+  "assets": 15,
+  "bpm": 120.27,
+  "plan_id": "5be7854ca67ce974a6ce5b2f8dd77096f310a5c738a9c50fc0cd889292edeb4f",
+  "job": {
+    "job_id": "d1ed7212a87f4f429a7116f12a854c07",
+    "status": "queued"
+  },
+  "final": {
+    "job_id": "d1ed7212a87f4f429a7116f12a854c07",
+    "status": "completed",
+    "stage": "completed",
+    "progress": 100,
+    "error": null
+  },
+  "qa": {
+    "audio_codec": "aac",
+    "audio_duration_s": 10.0,
+    "audio_peak": 0.84477,
+    "beat_sync_fraction_within_one_frame": 1.0,
+    "black_frames": [],
+    "detected_cut_count": 6,
+    "duration_s": 10.0,
+    "errors": [],
+    "fps": "30/1",
+    "frames": 300,
+    "height": 1280,
+    "longest_nearly_static_frames": 0,
+    "passed": true,
+    "text_layout": [
+      {
+        "font": "Noto Sans CJK SC",
+        "glyphs_present": true,
+        "lines": 1,
+        "safe_box": [
+          61,
+          909,
+          659,
+          1017
+        ],
+        "text": "山海有时"
+      },
+      {
+        "font": "Noto Sans CJK SC",
+        "glyphs_present": true,
+        "lines": 1,
+        "safe_box": [
+          61,
+          947,
+          659,
+          1015
+        ],
+        "text": "等一阵风，越过山脊"
+      },
+      {
+        "font": "Noto Sans CJK SC",
+        "glyphs_present": true,
+        "lines": 1,
+        "safe_box": [
+          61,
+          947,
+          659,
+          1015
+        ],
+        "text": "循着潮声，走向海边"
+      },
+      {
+        "font": "Noto Sans CJK SC",
+        "glyphs_present": true,
+        "lines": 1,
+        "safe_box": [
+          61,
+          947,
+          659,
+          1015
+        ],
+        "text": "把今天留在这里"
+      }
+    ],
+    "video_codec": "h264",
+    "warnings": [],
+    "width": 720
+  }
+}

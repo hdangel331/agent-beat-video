@@ -1,0 +1,11 @@
+{
+  "client": "OpenCode",
+  "model": "deterministic loopback test fixture",
+  "calls": [
+    "beatvideo_create_video",
+    "stop"
+  ],
+  "job_id": "39b57788ed6d44ebbaa74acbeccd073e",
+  "frames": 300,
+  "passed": true
+}

@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "agent-beat-video": {
+      "command": "C:\\AgentBeatVideo\\.venv\\Scripts\\python.exe",
+      "args": [
+        "-m",
+        "agent_beat_video.cli",
+        "--root",
+        "C:\\AgentBeatVideo\\work\\demo",
+        "mcp"
+      ]
+    }
+  }
+}
